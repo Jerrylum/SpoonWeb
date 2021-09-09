@@ -41,6 +41,10 @@ export default defineComponent({
     msg: String,
   },
 });
+
+import ClientDevice from "../lib/client/ClientDevice";
+
+//var a: ClientDevice = new ClientDevice("");
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
