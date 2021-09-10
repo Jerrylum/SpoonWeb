@@ -1,4 +1,6 @@
 import CryptoJS from "crypto-js";
+import rs, { RSAKey } from 'jsrsasign';
+
 var util = require('util');
 
 export default class ByteBuffer {
@@ -8,7 +10,7 @@ export default class ByteBuffer {
 
     constructor(arg?: ArrayBuffer | number) {
         var buf: ArrayBuffer;
-        if (arg instanceof ArrayBuffer) 
+        if (arg instanceof ArrayBuffer)
             buf = arg;
         else
             buf = new ArrayBuffer(arg ?? 1024);
@@ -20,8 +22,9 @@ export default class ByteBuffer {
     }
 
     public static toWordArray(buf: ByteBuffer): CryptoJS.lib.WordArray {
-        buf.put(new Uint8Array([0,0,0,0]), 4 - buf.index() % 4); // padding
-        return CryptoJS.lib.WordArray.create(Array.from(new Int32Array(buf.compactData().buffer)), buf.index());
+        var length = buf.index();
+        buf.put(new Uint8Array([0, 0, 0, 0]), 4 - length % 4); // padding
+        return CryptoJS.lib.WordArray.create(Array.from(new Int32Array(buf.compactData().buffer)), length);
     }
 
     public static toByteBuffer(array: CryptoJS.lib.WordArray): ByteBuffer {
@@ -71,6 +74,25 @@ export default class ByteBuffer {
         return new util.TextDecoder().decode(this.get(actualByteSize));
     }
 
+    public getRSAPublicKey() {
+        var actualByteSize = this.getInt();
+
+        if (actualByteSize > 512)
+            throw new Error("The received encoded buffer length is longer than maximum allowed");
+        if (actualByteSize < 0)
+            throw new Error("The received encoded buffer length is less than zero! Weird data!");
+
+        var buf = new ByteBuffer().put(this.get(actualByteSize));
+        var array = ByteBuffer.toWordArray(buf);
+        var pubKeyPEM = "-----BEGIN PUBLIC KEY-----" + CryptoJS.enc.Base64.stringify(array) + "-----END PUBLIC KEY-----";
+        // var buf2 = buf.compactData().buffer;
+        // var pubKeyPEM = "-----BEGIN PUBLIC KEY-----" + ByteBuffer.base64ArrayBuffer(buf2) + "-----END PUBLIC KEY-----";
+        var rtn = rs.KEYUTIL.getKey(pubKeyPEM);
+
+        if (rtn instanceof RSAKey)
+            return rtn;
+    }
+
     public put(buf: DataView | ArrayBuffer | Uint8Array, len?: number) {
         var target: Uint8Array;
         if (buf instanceof DataView)
@@ -93,7 +115,7 @@ export default class ByteBuffer {
         this.expand(1);
 
         this.data[this.position] = byte;
-        this.position ++;
+        this.position++;
         return this;
     }
 
@@ -108,11 +130,18 @@ export default class ByteBuffer {
         return this.put(buf);
     }
 
-    public putUtf(str: string, maxByteSize = 32767*4) {
+    public putUtf(str: string, maxByteSize = 32767 * 4) {
         var bytes = new util.TextEncoder().encode(str);
         if (bytes.length > maxByteSize)
             throw new Error("string too big");
         return this.putInt(bytes.length).put(bytes);
+    }
+
+    public putRSAPublicKey(key: rs.RSAKey) {
+        var pubKeyPEM = rs.KEYUTIL.getPEM(key);
+        pubKeyPEM = pubKeyPEM.slice(28, pubKeyPEM.length - 28).replace(/\r\n/g, "");
+        var buf = ByteBuffer.toByteBuffer(CryptoJS.enc.Base64.parse(pubKeyPEM));
+        this.putInt(buf.capacity()).put(buf.rawData());
     }
 
     public capacity() {

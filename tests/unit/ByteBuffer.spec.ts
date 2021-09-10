@@ -2,6 +2,8 @@ import ByteBuffer from "@/lib/network/ByteBuffer";
 import AESUtil from "@/lib/network/security/AESUtil";
 import sha256 from 'crypto-js/sha256';
 import CryptoJS from "crypto-js";
+import RSAUtil from "@/lib/network/security/RSAUtil";
+import rs from 'jsrsasign';
 
 test("new ByteBuffer", () => {
     var buffer;
@@ -90,4 +92,38 @@ test("new WordArray", () => {
     arr = ByteBuffer.toWordArray(buffer);
     newBuffer = ByteBuffer.toByteBuffer(arr);
     expect(newBuffer.getUtf()).toBe("今晚去邊度食飯？");
+})
+
+test("test rsa", () => {
+    var keyObj1 = rs.KEYUTIL.getKey(
+        "-----BEGIN PUBLIC KEY-----" + 
+        "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCd6UUqb8QtQo6b3RlMg91E6cmW" + 
+        "o+fnDlBg4GofK7EXTu8TFaJfT0c24aQuIbwN9tE5IcK14CfaUFjNE8fR/KrOAuer" + 
+        "kpVj7p8QOc1faTGnz2lbi0fbqNUM3b0qV5FuUjieFJr6XMecnFCCX5bBMhYD0vZh" + 
+        "HsjmAaUbMY5/0CgGQwIDAQAB" + 
+        "-----END PUBLIC KEY-----");
+
+    if (!(keyObj1 instanceof rs.RSAKey))
+        throw new Error("failed");
+
+    var buffer: ByteBuffer;
+
+    buffer = new ByteBuffer();
+    buffer.putRSAPublicKey(keyObj1);
+    buffer.rewind();
+    var keyObj2 = buffer.getRSAPublicKey();
+
+    if (keyObj2 == undefined)
+        throw new Error("failed");
+
+    // unstable may not be the same
+    // var a = rs.KEYUTIL.getPEM(keyObj1);
+    // var b = rs.KEYUTIL.getPEM(keyObj2);
+    // expect(a).toBe(b);
+
+
+    //@ts-ignore
+    var a = rs.KJUR.crypto.Cipher.encrypt(buffer.rawData(), keyObj1, "RSA");
+    // var b = rs.KJUR.crypto.Cipher.encrypt("hello world", keyObj2, "RSA");
+    // expect(a).toBe(b);
 })
