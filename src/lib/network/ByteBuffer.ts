@@ -1,5 +1,7 @@
 import CryptoJS from "crypto-js";
 import NodeRSA from 'node-rsa';
+// import { X509 } from "jsrsasign";
+// import x509 from "js-x509-utils";
 
 var util = require('util');
 
@@ -8,10 +10,12 @@ export default class ByteBuffer {
     private data: Uint8Array;
     private position: number = 0;
 
-    constructor(arg?: ArrayBuffer | number) { // pure ArrayBuffer only, not Uint8Array
+    constructor(arg?: ArrayBuffer | Uint8Array | number) { // pure ArrayBuffer only, not Uint8Array
         var buf: ArrayBuffer;
         if (arg instanceof ArrayBuffer)
             buf = arg;
+        else if (arg instanceof Uint8Array)
+            buf = arg.buffer;
         else
             buf = new ArrayBuffer(arg ?? 1024);
 
@@ -85,7 +89,43 @@ export default class ByteBuffer {
 
         var buf = new ByteBuffer().put(this.get(actualByteSize));
         var key = new NodeRSA();
+        key.setOptions({ environment: 'browser', encryptionScheme: 'pkcs1' });
+
         key.importKey(Buffer.from(buf.compactData()), "pkcs1-public-der");
+        return key;
+    }
+
+    // public getX509RSAPublicKey() {
+    //     var actualByteSize = this.getInt();
+
+    //     if (actualByteSize > 512)
+    //         throw new Error("The received encoded buffer length is longer than maximum allowed");
+    //     if (actualByteSize < 0)
+    //         throw new Error("The received encoded buffer length is less than zero! Weird data!");
+
+    //     var x509Buf = new ByteBuffer().put(this.get(actualByteSize));
+    //     var temp = x509.parse(Buffer.from(x509Buf.compactData()), 'der');
+    //     var derBuf = temp.tbsCertificate;
+
+    //     var key = new NodeRSA();
+    //     key.setOptions({ environment: 'browser', encryptionScheme: 'pkcs1' });
+    //     key.importKey(Buffer.from(derBuf), "pkcs1-public-der");
+    //     return key;
+    // }
+    public getX509RSAPublicKey() {
+        var actualByteSize = this.getInt();
+
+        if (actualByteSize > 512)
+            throw new Error("The received encoded buffer length is longer than maximum allowed");
+        if (actualByteSize < 0)
+            throw new Error("The received encoded buffer length is less than zero! Weird data!");
+
+        var buf = new ByteBuffer().put(this.get(actualByteSize));
+        var pem = "-----BEGIN PUBLIC KEY-----" + Buffer.from(buf.compactData()).toString("base64") + "-----END PUBLIC KEY-----";
+
+        var key = new NodeRSA(pem);
+        key.setOptions({ environment: 'browser', encryptionScheme: 'pkcs1' });
+
         return key;
     }
 

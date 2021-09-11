@@ -6,8 +6,8 @@ class AESUtil {
         return {
             iv: CryptoJS.lib.WordArray.random(128 / 8),
             key: CryptoJS.lib.WordArray.random(32),
-            mode: CryptoJS.mode.CBC,
-            // padding: CryptoJS.pad.NoPadding
+            mode: CryptoJS.mode.CFB,
+            padding: CryptoJS.pad.NoPadding
         };
     }
 }

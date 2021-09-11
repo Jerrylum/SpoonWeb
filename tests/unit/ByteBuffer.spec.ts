@@ -90,6 +90,11 @@ test("new WordArray", () => {
     arr = ByteBuffer.toWordArray(buffer);
     newBuffer = ByteBuffer.toByteBuffer(arr);
     expect(newBuffer.getUtf()).toBe("今晚去邊度食飯？");
+
+    buffer = new ByteBuffer();
+    buffer.putUtf("今晚去邊度食飯？");
+    newBuffer = new ByteBuffer(buffer.compactData());
+    expect(newBuffer.getUtf()).toBe("今晚去邊度食飯？");
 })
 
 test("test rsa", () => {
@@ -122,8 +127,8 @@ test("test encrypted data", () => {
     var aesDetail = {
         iv: CryptoJS.lib.WordArray.random(128 / 8),
         key: CryptoJS.lib.WordArray.random(32),
-        mode: CryptoJS.mode.CBC,
-        padding: CryptoJS.pad.NoPadding // XXX: unstable
+        mode: CryptoJS.mode.CFB,
+        padding: CryptoJS.pad.NoPadding
     };
 
 
