@@ -1,5 +1,5 @@
 import CryptoJS from "crypto-js";
-import rs, { RSAKey } from 'jsrsasign';
+import NodeRSA from 'node-rsa';
 
 var util = require('util');
 
@@ -8,12 +8,13 @@ export default class ByteBuffer {
     private data: Uint8Array;
     private position: number = 0;
 
-    constructor(arg?: ArrayBuffer | number) {
+    constructor(arg?: ArrayBuffer | number) { // pure ArrayBuffer only, not Uint8Array
         var buf: ArrayBuffer;
         if (arg instanceof ArrayBuffer)
             buf = arg;
         else
             buf = new ArrayBuffer(arg ?? 1024);
+
         this.data = new Uint8Array(buf);
     }
 
@@ -83,14 +84,9 @@ export default class ByteBuffer {
             throw new Error("The received encoded buffer length is less than zero! Weird data!");
 
         var buf = new ByteBuffer().put(this.get(actualByteSize));
-        var array = ByteBuffer.toWordArray(buf);
-        var pubKeyPEM = "-----BEGIN PUBLIC KEY-----" + CryptoJS.enc.Base64.stringify(array) + "-----END PUBLIC KEY-----";
-        // var buf2 = buf.compactData().buffer;
-        // var pubKeyPEM = "-----BEGIN PUBLIC KEY-----" + ByteBuffer.base64ArrayBuffer(buf2) + "-----END PUBLIC KEY-----";
-        var rtn = rs.KEYUTIL.getKey(pubKeyPEM);
-
-        if (rtn instanceof RSAKey)
-            return rtn;
+        var key = new NodeRSA();
+        key.importKey(Buffer.from(buf.compactData()), "pkcs1-public-der");
+        return key;
     }
 
     public put(buf: DataView | ArrayBuffer | Uint8Array, len?: number) {
@@ -137,15 +133,19 @@ export default class ByteBuffer {
         return this.putInt(bytes.length).put(bytes);
     }
 
-    public putRSAPublicKey(key: rs.RSAKey) {
-        var pubKeyPEM = rs.KEYUTIL.getPEM(key);
-        pubKeyPEM = pubKeyPEM.slice(28, pubKeyPEM.length - 28).replace(/\r\n/g, "");
-        var buf = ByteBuffer.toByteBuffer(CryptoJS.enc.Base64.parse(pubKeyPEM));
-        this.putInt(buf.capacity()).put(buf.rawData());
+    public putRSAPublicKey(key: NodeRSA) {
+        var keyBuf = key.exportKey("pkcs1-public-der");
+        var buf = new ByteBuffer(new Uint8Array(keyBuf).buffer);
+        return this.putInt(buf.capacity()).put(buf.rawData());
     }
 
     public capacity() {
         return this.data.length;
+    }
+
+    public forward() {
+        this.position = this.capacity();
+        return this;
     }
 
     public index() {

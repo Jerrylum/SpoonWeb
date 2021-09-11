@@ -1,4 +1,7 @@
-export default interface EncryptionManager {
-    read(data: DataView): void
-    write(data: DataView): void
+import ByteBuffer from "../ByteBuffer";
+
+export default interface Packet {
+    getClassName(): string
+    read(buf: ByteBuffer): void
+    write(buf: ByteBuffer): void
 }
