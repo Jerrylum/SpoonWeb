@@ -1,5 +1,5 @@
 import ClientConnection from "./ClientConnection";
-import spoon from "../network/protocol/Packets";
+import packets from "../network/protocol/Packets";
 import AESUtil from "../network/security/AESUtil";
 
 export default class ClientDevice {
@@ -16,13 +16,13 @@ export default class ClientDevice {
         this.connection.addEventListener('RequireEncryptionPacket', (ev: Event) => {
             if (this.isEncrypted()) return;
 
-            var packet: spoon.network.protocol.RequireEncryptionPacket = (ev as CustomEvent).detail;
+            const packet: packets.RequireEncryptionPacket = (ev as CustomEvent).detail;
 
             this.connection.encryption.keyRSA = packet.serverPublicKey;
 
-            var secret = AESUtil.createCipherSecret();
+            const secret = AESUtil.createCipherSecret();
 
-            this.connection.sendPacket(new spoon.network.protocol.EncryptionBeginPacket(secret.key, secret.iv));
+            this.connection.sendPacket(new packets.EncryptionBeginPacket(secret.key, secret.iv));
 
             this.connection.encryption.secretAES = secret;
         });
@@ -37,7 +37,7 @@ export default class ClientDevice {
     }
 
     set Channel(newChannel: string) {
-        this.connection.sendPacket(new spoon.network.protocol.SetChannelPacket(newChannel)); // TODO
+        this.connection.sendPacket(new packets.SetChannelPacket(newChannel)); // TODO
         this._channel = newChannel;
     }
 

@@ -9,12 +9,12 @@ export default class EncryptionManager {
     
     public encode(buf: Uint8Array): ByteBuffer {
         if (this.secretAES != null) {
-            var words = ByteBuffer.toWordArray(new ByteBuffer(buf.buffer).forward());
-            var result1 = CryptoJS.AES.encrypt(words, this.secretAES.key, this.secretAES);
+            const words = ByteBuffer.toWordArray(new ByteBuffer(buf.buffer).forward());
+            const result1 = CryptoJS.AES.encrypt(words, this.secretAES.key, this.secretAES);
 
             return ByteBuffer.toByteBuffer(result1.ciphertext);
         } else if (this.keyRSA != null) {
-            var result2 = new Uint8Array(this.keyRSA.encrypt(Buffer.from(buf)));
+            const result2 = new Uint8Array(this.keyRSA.encrypt(Buffer.from(buf)));
             return new ByteBuffer(result2.buffer);
         } else {
             return new ByteBuffer(buf.buffer);
@@ -23,13 +23,13 @@ export default class EncryptionManager {
 
     public decode(buf: Uint8Array): ByteBuffer {
         if (this.secretAES != null) {
-            var encryptedData = CryptoJS.lib.CipherParams.create({
+            const encryptedData = CryptoJS.lib.CipherParams.create({
                 ciphertext: ByteBuffer.toWordArray(new ByteBuffer(buf.buffer).forward())
             });
-            var result1 = CryptoJS.AES.decrypt(encryptedData, this.secretAES.key, this.secretAES);
+            const result1 = CryptoJS.AES.decrypt(encryptedData, this.secretAES.key, this.secretAES);
             return ByteBuffer.toByteBuffer(result1);
         } else if (this.keyRSA != null) {
-            var result2 = new Uint8Array(this.keyRSA.decrypt(Buffer.from(buf)));
+            const result2 = new Uint8Array(this.keyRSA.decrypt(Buffer.from(buf)));
             return new ByteBuffer(result2.buffer);
         } else {
             return new ByteBuffer(buf.buffer);

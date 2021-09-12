@@ -33,7 +33,9 @@
 </template>
 
 <script lang="ts">
+// import rrr from '@/lib/client/ClientConnection';
 import { defineComponent } from 'vue';
+import * as spoon from '../lib';
 
 export default defineComponent({
   name: 'HelloWorld',
@@ -42,9 +44,9 @@ export default defineComponent({
   },
 });
 
-import ClientDevice from "../lib/client/ClientDevice";
+var client = new spoon.ClientDevice("ws://127.0.0.1:7000");
 
-//var a: ClientDevice = new ClientDevice("");
+
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->

@@ -8,16 +8,20 @@ export default class ClientConnection extends Connection {
         this.websocket.binaryType = "arraybuffer";
 
         this.websocket.onopen = (ev: Event) => {
-            console.log("g");
+            try {
+                this.fireEvent(ev, "ConnectionOpenEvent");
+            } catch (error) {
+                console.log(error);
+            }
         }
 
         this.websocket.onmessage = (ev: MessageEvent) => {
-            var buffer = ev.data;
+            const buffer = ev.data;
 
             if (!(buffer instanceof ArrayBuffer)) return;
 
             try {
-                var packet = PacketEncoder.decode(new Uint8Array(buffer), this);
+                const packet = PacketEncoder.decode(new Uint8Array(buffer), this);
                 this.fireEvent(packet);
             } catch (error) {
                 console.log(error);
@@ -25,11 +29,19 @@ export default class ClientConnection extends Connection {
         }
 
         this.websocket.onclose = (ev: CloseEvent) => {
-
+            try {
+                this.fireEvent(ev, "ConnectionCloseEvent");
+            } catch (error) {
+                console.log(error);
+            }
         }
 
         this.websocket.onerror = (ev: Event) => {
-
+            try {
+                this.fireEvent(ev, "ClientErrorEvent");
+            } catch (error) {
+                console.log(error);
+            }
         }
     }
 }

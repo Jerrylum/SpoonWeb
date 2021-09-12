@@ -7,7 +7,7 @@ import NodeRSA from 'node-rsa';
 jest.setTimeout(30000);
 
 test("client connect", async () => {
-    var device = new ClientDevice("ws://192.168.0.2:7000");
+    const device = new ClientDevice("ws://192.168.0.2:7000");
 
     await new Promise((r) => setTimeout(r, 1000));
 

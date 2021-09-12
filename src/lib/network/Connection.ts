@@ -7,8 +7,8 @@ export default abstract class Connection extends EventListenerManager {
 
     readonly websocket: WebSocket;
     readonly encryption: EncryptionManager;
-    public receivedPackets: number = 0;
-    public sentPackets: number = 1;
+    public receivedPackets = 0;
+    public sentPackets = 1;
 
     public constructor(websocket: WebSocket) {
         super();
@@ -24,7 +24,7 @@ export default abstract class Connection extends EventListenerManager {
         try {
             this.websocket.send(PacketEncoder.encode(packet, this));
         } catch (error) {
-            
+            console.log(error);            
         }
     }
 }

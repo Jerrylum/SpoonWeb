@@ -4,7 +4,7 @@ import CryptoJS from "crypto-js";
 import NodeRSA from 'node-rsa';
 
 test("new ByteBuffer", () => {
-    var buffer;
+    let buffer;
 
     buffer = new ByteBuffer();
     expect(buffer.capacity()).toBe(1024);
@@ -17,7 +17,7 @@ test("new ByteBuffer", () => {
 })
 
 test("put integer", () => {
-    var buffer;
+    let buffer;
 
     buffer = new ByteBuffer(4);
     buffer.putInt(48);
@@ -36,9 +36,7 @@ test("put integer", () => {
 })
 
 test("put byte", () => {
-    var buffer;
-
-    buffer = new ByteBuffer(4);
+    const buffer = new ByteBuffer(4);
     buffer.putByte(48);
     expect(buffer.capacity()).toBe(4);
     expect(buffer.rawData()[0]).toBe(48);
@@ -59,9 +57,7 @@ test("put byte", () => {
 })
 
 test("put string", () => {
-    var buffer;
-
-    buffer = new ByteBuffer(4);
+    const buffer = new ByteBuffer(4);
     buffer.putUtf("hello world");
     expect(buffer.capacity()).toBe(15);
     expect(buffer.rawData()[3]).toBe(11);
@@ -71,7 +67,7 @@ test("put string", () => {
 })
 
 test("new WordArray", () => {
-    var buffer: ByteBuffer, newBuffer: ByteBuffer, arr: CryptoJS.lib.WordArray;
+    let buffer: ByteBuffer, newBuffer: ByteBuffer, arr: CryptoJS.lib.WordArray;
 
     buffer = new ByteBuffer(4);
     buffer.putInt(3000);
@@ -98,7 +94,7 @@ test("new WordArray", () => {
 })
 
 test("test rsa", () => {
-    var keyObj1 = new NodeRSA(
+    const keyObj1 = new NodeRSA(
         "-----BEGIN PUBLIC KEY-----" +
         "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCd6UUqb8QtQo6b3RlMg91E6cmW" +
         "o+fnDlBg4GofK7EXTu8TFaJfT0c24aQuIbwN9tE5IcK14CfaUFjNE8fR/KrOAuer" +
@@ -109,10 +105,10 @@ test("test rsa", () => {
     // var keyObj1 = RSAUtil.createKeys();
     keyObj1.setOptions({ environment: 'browser' });
 
-    var buffer = new ByteBuffer();
+    const buffer = new ByteBuffer();
     buffer.putRSAPublicKey(keyObj1);
     buffer.rewind();
-    var keyObj2 = buffer.getRSAPublicKey();
+    const keyObj2 = buffer.getRSAPublicKey();
 
     if (keyObj2 == undefined)
         throw new Error("failed");
@@ -124,7 +120,7 @@ test("test rsa", () => {
 })
 
 test("test encrypted data", () => {
-    var aesDetail = {
+    const aesDetail = {
         iv: CryptoJS.lib.WordArray.random(128 / 8),
         key: CryptoJS.lib.WordArray.random(32),
         mode: CryptoJS.mode.CFB,
@@ -132,42 +128,42 @@ test("test encrypted data", () => {
     };
 
 
-    var buffer = new ByteBuffer(4);
+    const buffer = new ByteBuffer(4);
     buffer.putUtf("hello world");
-    var data1 = buffer.compactData();
-    var before = ByteBuffer.toWordArray(buffer);
+    const data1 = buffer.compactData();
+    const before = ByteBuffer.toWordArray(buffer);
 
 
-    var encrypted = CryptoJS.AES.encrypt(before, aesDetail.key, aesDetail);
-    var encryptedData = CryptoJS.lib.CipherParams.create({
+    const encrypted = CryptoJS.AES.encrypt(before, aesDetail.key, aesDetail);
+    const encryptedData = CryptoJS.lib.CipherParams.create({
         ciphertext: encrypted.ciphertext
     });
 
 
-    var decrypted = CryptoJS.AES.decrypt(encryptedData, aesDetail.key, aesDetail);
-    var data2 = ByteBuffer.toByteBuffer(decrypted).rawData();
+    const decrypted = CryptoJS.AES.decrypt(encryptedData, aesDetail.key, aesDetail);
+    const data2 = ByteBuffer.toByteBuffer(decrypted).rawData();
 
     expect(data1).toEqual(data2);
 })
 
 test("read write ascii string", () => {
-    var expected = "hello world";
+    const expected = "hello world";
 
-    var buffer = new ByteBuffer().putUtf(expected);
+    const buffer = new ByteBuffer().putUtf(expected);
 
     buffer.rewind();
-    var actual = buffer.getUtf();
+    const actual = buffer.getUtf();
 
     expect(expected).toBe(actual);
 })
 
 test("read write utf string", () => {
-    var expected = "你今晚去邊度食飯？";
+    const expected = "你今晚去邊度食飯？";
 
-    var buffer = new ByteBuffer().putUtf(expected);
+    const buffer = new ByteBuffer().putUtf(expected);
 
     buffer.rewind();
-    var actual = buffer.getUtf();
+    const actual = buffer.getUtf();
 
     expect(expected).toBe(actual);
 })
@@ -197,11 +193,11 @@ test("read length negative string", () => {
 })
 
 test("read write public key", () => {
-    var key = RSAUtil.createKeys();
+    const key = RSAUtil.createKeys();
 
-    var buf = new ByteBuffer().putRSAPublicKey(key);
+    const buf = new ByteBuffer().putRSAPublicKey(key);
 
-    var actual = buf.rewind().getRSAPublicKey();
+    const actual = buf.rewind().getRSAPublicKey();
 
     // @ts-ignore
     expect(key.keyPair.n).toBeDefined();
