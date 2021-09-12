@@ -1,18 +1,21 @@
 import ByteBuffer from "../ByteBuffer";
-import CryptoJS from "crypto-js";
 import NodeRSA from 'node-rsa';
-import AESUtil from "./AESUtil";
+import { AES, AESProps } from "jscrypto/AES";
+import { CipherParams } from "jscrypto/CipherParams";
+import { Word32Array } from "jscrypto";
 
 export default class EncryptionManager {
-    secretAES?: AESUtil.CipherSecret;
+    secretAES?: Partial<AESProps>;
     keyRSA?: NodeRSA;
     
     public encode(buf: Uint8Array): ByteBuffer {
         if (this.secretAES != null) {
             const words = ByteBuffer.toWordArray(new ByteBuffer(buf.buffer).forward());
-            const result1 = CryptoJS.AES.encrypt(words, this.secretAES.key, this.secretAES);
+            const result1 = AES.encrypt(words, this.secretAES.key as Word32Array, this.secretAES);
 
-            return ByteBuffer.toByteBuffer(result1.ciphertext);
+            if (result1.cipherText == undefined) throw new Error("encrypt failed");            
+
+            return ByteBuffer.toByteBuffer(result1.cipherText);
         } else if (this.keyRSA != null) {
             const result2 = new Uint8Array(this.keyRSA.encrypt(Buffer.from(buf)));
             return new ByteBuffer(result2.buffer);
@@ -23,10 +26,10 @@ export default class EncryptionManager {
 
     public decode(buf: Uint8Array): ByteBuffer {
         if (this.secretAES != null) {
-            const encryptedData = CryptoJS.lib.CipherParams.create({
-                ciphertext: ByteBuffer.toWordArray(new ByteBuffer(buf.buffer).forward())
+            const encryptedData = new CipherParams({
+                cipherText: ByteBuffer.toWordArray(new ByteBuffer(buf.buffer).forward())
             });
-            const result1 = CryptoJS.AES.decrypt(encryptedData, this.secretAES.key, this.secretAES);
+            const result1 = AES.decrypt(encryptedData, this.secretAES.key as Word32Array, this.secretAES);
             return ByteBuffer.toByteBuffer(result1);
         } else if (this.keyRSA != null) {
             const result2 = new Uint8Array(this.keyRSA.decrypt(Buffer.from(buf)));

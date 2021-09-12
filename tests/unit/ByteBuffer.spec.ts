@@ -1,7 +1,12 @@
 import ByteBuffer from "@/lib/network/ByteBuffer";
 import RSAUtil from "@/lib/network/security/RSAUtil";
-import CryptoJS from "crypto-js";
 import NodeRSA from 'node-rsa';
+import { AES } from "jscrypto/AES";
+import { Word32Array } from "jscrypto/Word32Array";
+import { CipherParams } from "jscrypto/CipherParams";
+import { CFB } from "jscrypto/mode/CFB";
+import { NoPadding } from "jscrypto/pad/NoPadding";
+
 
 test("new ByteBuffer", () => {
     let buffer;
@@ -67,7 +72,7 @@ test("put string", () => {
 })
 
 test("new WordArray", () => {
-    let buffer: ByteBuffer, newBuffer: ByteBuffer, arr: CryptoJS.lib.WordArray;
+    let buffer: ByteBuffer, newBuffer: ByteBuffer, arr: Word32Array;
 
     buffer = new ByteBuffer(4);
     buffer.putInt(3000);
@@ -121,10 +126,10 @@ test("test rsa", () => {
 
 test("test encrypted data", () => {
     const aesDetail = {
-        iv: CryptoJS.lib.WordArray.random(128 / 8),
-        key: CryptoJS.lib.WordArray.random(32),
-        mode: CryptoJS.mode.CFB,
-        padding: CryptoJS.pad.NoPadding
+        iv: Word32Array.random(128 / 8),
+        key: Word32Array.random(32),
+        mode: CFB,
+        padding: NoPadding
     };
 
 
@@ -134,13 +139,13 @@ test("test encrypted data", () => {
     const before = ByteBuffer.toWordArray(buffer);
 
 
-    const encrypted = CryptoJS.AES.encrypt(before, aesDetail.key, aesDetail);
-    const encryptedData = CryptoJS.lib.CipherParams.create({
-        ciphertext: encrypted.ciphertext
+    const encrypted = AES.encrypt(before, aesDetail.key, aesDetail);
+    const encryptedData = new CipherParams({
+        cipherText: encrypted.cipherText
     });
 
 
-    const decrypted = CryptoJS.AES.decrypt(encryptedData, aesDetail.key, aesDetail);
+    const decrypted = AES.decrypt(encryptedData, aesDetail.key, aesDetail);
     const data2 = ByteBuffer.toByteBuffer(decrypted).rawData();
 
     expect(data1).toEqual(data2);

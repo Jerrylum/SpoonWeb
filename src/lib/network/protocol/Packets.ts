@@ -1,4 +1,5 @@
 import ByteBuffer from "../ByteBuffer";
+import { Word32Array } from "jscrypto/Word32Array";
 import Packet from "./Packet";
 import NodeRSA from 'node-rsa';
 
@@ -39,7 +40,7 @@ namespace packets {
     export class EncryptionBeginPacket implements Packet {
         static className = "com.jerryio.spoon.kernal.network.protocol.handshake.EncryptionBeginPacket"
 
-        constructor(public clientAESKey?: CryptoJS.lib.WordArray, public clientIv?: CryptoJS.lib.WordArray) { }
+        constructor(public clientAESKey?: Word32Array, public clientIv?: Word32Array) { }
 
         getClassName() { return EncryptionBeginPacket.className; }
 

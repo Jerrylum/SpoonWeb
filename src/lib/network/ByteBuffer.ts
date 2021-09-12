@@ -1,4 +1,4 @@
-import CryptoJS from "crypto-js";
+import { Word32Array } from "jscrypto/Word32Array";
 import NodeRSA from 'node-rsa';
 
 import util from 'util';
@@ -24,14 +24,14 @@ export default class ByteBuffer {
         return new DataView(new ArrayBuffer(size));
     }
 
-    public static toWordArray(buf: ByteBuffer): CryptoJS.lib.WordArray {
+    public static toWordArray(buf: ByteBuffer): Word32Array {
         const length = buf.index();
         buf.put(new Uint8Array([0, 0, 0, 0]), 4 - length % 4); // padding
-        return CryptoJS.lib.WordArray.create(Array.from(new Int32Array(buf.compactData().buffer)), length);
+        return new Word32Array(Array.from(new Int32Array(buf.compactData().buffer)), length);
     }
 
-    public static toByteBuffer(array: CryptoJS.lib.WordArray): ByteBuffer {
-        return new ByteBuffer(new Int32Array(array.words).buffer.slice(0, array.sigBytes));
+    public static toByteBuffer(array: Word32Array): ByteBuffer {
+        return new ByteBuffer(new Int32Array(array.words).buffer.slice(0, array.nSigBytes));
     }
 
     private expand(payloadSize: number) {
