@@ -77,19 +77,19 @@ test("new WordArray", () => {
     buffer = new ByteBuffer(4);
     buffer.putInt(3000);
     arr = ByteBuffer.toWordArray(buffer);
-    newBuffer = ByteBuffer.toByteBuffer(arr);
+    newBuffer = ByteBuffer.fromWordArray(arr);
     expect(newBuffer.getInt()).toBe(3000);
 
     buffer = new ByteBuffer(4);
     buffer.putUtf("hello world");
     arr = ByteBuffer.toWordArray(buffer);
-    newBuffer = ByteBuffer.toByteBuffer(arr);
+    newBuffer = ByteBuffer.fromWordArray(arr);
     expect(newBuffer.getUtf()).toBe("hello world");
 
     buffer = new ByteBuffer();
     buffer.putUtf("今晚去邊度食飯？");
     arr = ByteBuffer.toWordArray(buffer);
-    newBuffer = ByteBuffer.toByteBuffer(arr);
+    newBuffer = ByteBuffer.fromWordArray(arr);
     expect(newBuffer.getUtf()).toBe("今晚去邊度食飯？");
 
     buffer = new ByteBuffer();
@@ -146,7 +146,7 @@ test("test encrypted data", () => {
 
 
     const decrypted = AES.decrypt(encryptedData, aesDetail.key, aesDetail);
-    const data2 = ByteBuffer.toByteBuffer(decrypted).rawData();
+    const data2 = ByteBuffer.fromWordArray(decrypted).rawData();
 
     expect(data1).toEqual(data2);
 })

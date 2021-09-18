@@ -54,8 +54,8 @@ namespace packets {
         write(buf: ByteBuffer) {
             if (this.clientAESKey == null || this.clientIv == null) return;
 
-            const data1 = ByteBuffer.toByteBuffer(this.clientAESKey).rawData();
-            const data2 = ByteBuffer.toByteBuffer(this.clientIv).rawData();
+            const data1 = ByteBuffer.fromWordArray(this.clientAESKey).rawData();
+            const data2 = ByteBuffer.fromWordArray(this.clientIv).rawData();
 
             buf.putInt(data1.length).put(data1);
             buf.put(data2);

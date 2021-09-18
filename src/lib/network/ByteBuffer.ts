@@ -3,17 +3,20 @@ import NodeRSA from 'node-rsa';
 
 import util from 'util';
 
+const MyTextEncoder = util.TextEncoder || window.TextEncoder;
+const MyTextDecoder = util.TextDecoder || window.TextDecoder;
+
 export default class ByteBuffer {
     // private buffer: ArrayBuffer;
     private data: Uint8Array;
     private position = 0;
 
-    constructor(arg?: ArrayBuffer | Uint8Array | number) { // pure ArrayBuffer only, not Uint8Array
+    constructor(arg?: ArrayBuffer | Buffer | Uint8Array | number) {
         let buf: ArrayBuffer;
         if (arg instanceof ArrayBuffer)
             buf = arg;
-        else if (arg instanceof Uint8Array)
-            buf = arg.buffer;
+        else if (arg instanceof Uint8Array) // also Buffer
+            buf = new Uint8Array(arg).buffer;
         else
             buf = new ArrayBuffer(arg ?? 1024);
 
@@ -30,7 +33,7 @@ export default class ByteBuffer {
         return new Word32Array(Array.from(new Int32Array(buf.compactData().buffer)), length);
     }
 
-    public static toByteBuffer(array: Word32Array): ByteBuffer {
+    public static fromWordArray(array: Word32Array): ByteBuffer {
         return new ByteBuffer(new Int32Array(array.words).buffer.slice(0, array.nSigBytes));
     }
 
@@ -74,7 +77,7 @@ export default class ByteBuffer {
         if (actualByteSize < 0)
             throw new Error("The received encoded string buffer length is less than zero! Weird string!");
 
-        return new util.TextDecoder().decode(this.get(actualByteSize));
+        return new MyTextDecoder().decode(this.get(actualByteSize));
     }
 
     public getRSAPublicKey() {
@@ -148,7 +151,7 @@ export default class ByteBuffer {
     }
 
     public putUtf(str: string, maxByteSize = 32767 * 4) {
-        const bytes = new util.TextEncoder().encode(str);
+        const bytes = new MyTextEncoder().encode(str);
         if (bytes.length > maxByteSize)
             throw new Error("string too big");
         return this.putInt(bytes.length).put(bytes);
