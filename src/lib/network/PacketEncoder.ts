@@ -20,7 +20,7 @@ export default abstract class PacketEncoder {
     }
 
     public static decode(data: Uint8Array, connection: Connection): Packet {
-        const gen3 = new ByteBuffer(data);
+        const gen3 = ByteBuffer.from(data);
         const gen3Length = gen3.getInt();
         if (gen3Length > 1024 * 1024)
             throw new Error("Packet too big! (" + gen3Length + ")");

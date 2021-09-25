@@ -47,15 +47,15 @@ namespace packets {
         read(buf: ByteBuffer) {
             const data1len = buf.getInt();
 
-            this.clientAESKey = ByteBuffer.toWordArray(new ByteBuffer(buf.get(data1len)));
-            this.clientIv = ByteBuffer.toWordArray(new ByteBuffer(buf.get(16)));
+            this.clientAESKey = ByteBuffer.toWordArray(ByteBuffer.from(buf.get(data1len)));
+            this.clientIv = ByteBuffer.toWordArray(ByteBuffer.from(buf.get(16)));
         }
 
         write(buf: ByteBuffer) {
             if (this.clientAESKey == null || this.clientIv == null) return;
 
-            const data1 = ByteBuffer.fromWordArray(this.clientAESKey).rawData();
-            const data2 = ByteBuffer.fromWordArray(this.clientIv).rawData();
+            const data1 = ByteBuffer.from(this.clientAESKey).rawData();
+            const data2 = ByteBuffer.from(this.clientIv).rawData();
 
             buf.putInt(data1.length).put(data1);
             buf.put(data2);

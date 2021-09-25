@@ -7,20 +7,25 @@ const MyTextEncoder = util.TextEncoder || window.TextEncoder;
 const MyTextDecoder = util.TextDecoder || window.TextDecoder;
 
 export default class ByteBuffer {
-    // private buffer: ArrayBuffer;
     private data: Uint8Array;
     private position = 0;
 
-    constructor(arg?: ArrayBuffer | Buffer | Uint8Array | number) {
+    constructor(arg?: ArrayBuffer | Buffer | Uint8Array | Word32Array | number) {
         let buf: ArrayBuffer;
         if (arg instanceof ArrayBuffer)
             buf = arg;
         else if (arg instanceof Uint8Array) // also Buffer
             buf = new Uint8Array(arg).buffer;
+        else if (arg == null || !isNaN(Number(arg)))
+            buf = new ArrayBuffer(arg as number ?? 1024);
         else
-            buf = new ArrayBuffer(arg ?? 1024);
+            buf = new Int32Array((arg as Word32Array).words).buffer.slice(0, (arg as Word32Array).nSigBytes);
 
         this.data = new Uint8Array(buf);
+    }
+
+    public static from(arg?: ArrayBuffer | Buffer | Uint8Array | Word32Array): ByteBuffer {
+        return new ByteBuffer(arg);
     }
 
     public static malloc(size: number) {
@@ -31,10 +36,6 @@ export default class ByteBuffer {
         const length = buf.index();
         buf.put(new Uint8Array([0, 0, 0, 0]), 4 - length % 4); // padding
         return new Word32Array(Array.from(new Int32Array(buf.compactData().buffer)), length);
-    }
-
-    public static fromWordArray(array: Word32Array): ByteBuffer {
-        return new ByteBuffer(new Int32Array(array.words).buffer.slice(0, array.nSigBytes));
     }
 
     private expand(payloadSize: number) {

@@ -10,32 +10,32 @@ export default class EncryptionManager {
     
     public encode(buf: Uint8Array): ByteBuffer {
         if (this.secretAES != null) {
-            const words = ByteBuffer.toWordArray(new ByteBuffer(buf).forward());
+            const words = ByteBuffer.toWordArray(ByteBuffer.from(buf).forward());
             const result1 = AES.encrypt(words, this.secretAES.key as Word32Array, this.secretAES);
 
             if (result1.cipherText == undefined) throw new Error("encrypt failed");            
 
-            return ByteBuffer.fromWordArray(result1.cipherText);
+            return ByteBuffer.from(result1.cipherText);
         } else if (this.keyRSA != null) {
             const result2 = this.keyRSA.encrypt(Buffer.from(buf));
-            return new ByteBuffer(result2);
+            return ByteBuffer.from(result2);
         } else {
-            return new ByteBuffer(buf);
+            return ByteBuffer.from(buf);
         }
     }
 
     public decode(buf: Uint8Array): ByteBuffer {
         if (this.secretAES != null) {
             const encryptedData = new CipherParams({
-                cipherText: ByteBuffer.toWordArray(new ByteBuffer(buf).forward())
+                cipherText: ByteBuffer.toWordArray(ByteBuffer.from(buf).forward())
             });
             const result1 = AES.decrypt(encryptedData, this.secretAES.key as Word32Array, this.secretAES);
-            return ByteBuffer.fromWordArray(result1);
+            return ByteBuffer.from(result1);
         } else if (this.keyRSA != null) {
             const result2 = this.keyRSA.decrypt(Buffer.from(buf));
-            return new ByteBuffer(result2);
+            return ByteBuffer.from(result2);
         } else {
-            return new ByteBuffer(buf);
+            return ByteBuffer.from(buf);
         }
     }
 }
