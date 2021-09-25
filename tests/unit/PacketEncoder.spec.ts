@@ -1,4 +1,3 @@
-import ByteBuffer from "@/lib/network/ByteBuffer";
 import Connection from "@/lib/network/Connection";
 import PacketEncoder from "@/lib/network/PacketEncoder";
 import packets from "@/lib/network/protocol/Packets";
